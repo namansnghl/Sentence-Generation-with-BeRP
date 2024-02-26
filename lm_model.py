@@ -3,7 +3,6 @@ import numpy as np
 import math
 import os
 
-
 # constants
 SENTENCE_BEGIN = "<s>"
 SENTENCE_END = "</s>"
@@ -138,7 +137,7 @@ class LanguageModel:
         train_str_lst = read_file(LanguageModel.get_filename())
         self.tokens = tokenize(train_str_lst, n_gram, by_char=False)
 
-    def train(self, verbose: bool = False, unk_replace: bool = False) -> None:
+    def train(self, tokens: list = None, verbose: bool = False, unk_replace: bool = True) -> None:
         """Trains the language model on the given data. Assumes that the given data
     has tokens that are white-space separated, has one sentence per line, and
     that the sentences begin with <s> and end with </s>
@@ -147,9 +146,13 @@ class LanguageModel:
     dictionary keys are counts of that word occurring in the given context from outer dictionary
 
     Args:
-        unk_replace: (bool): default value False, replace 1 frequency tokens with UNK during training
+        tokens: (list): (optional) tokens
+        unk_replace: (bool): default value True, replace 1 frequency tokens with UNK during training
         verbose (bool): default value False, to be used to turn on/off debugging prints
     """
+        if tokens:
+            self.tokens = tokens
+
         self.vocab = Counter(self.tokens)
 
         # UNK modification logic
@@ -169,7 +172,7 @@ class LanguageModel:
                 if verbose:
                     print("Replaced tokens with ", UNK)
 
-        self.vocabulary_size = sum(self.vocab.values())
+        self.vocabulary_size = len(set((self.vocab.keys())))
 
         grams = create_ngrams(self.tokens, self.n_gram)
         if verbose:
@@ -205,10 +208,10 @@ class LanguageModel:
       float: the probability value of the given tokens for this model
     """
         # Adding start and end if not already present
-        if sentence_tokens[:self.n_gram-1] != [SENTENCE_BEGIN]*(self.n_gram-1):
-            sentence_tokens = [SENTENCE_BEGIN]*(self.n_gram-1) + sentence_tokens
-        if sentence_tokens[-1*(self.n_gram-1):] != [SENTENCE_END]*(self.n_gram-1):
-            sentence_tokens = sentence_tokens + [SENTENCE_END]*(self.n_gram-1)
+        if sentence_tokens[:self.n_gram - 1] != [SENTENCE_BEGIN] * (self.n_gram - 1):
+            sentence_tokens = [SENTENCE_BEGIN] * (self.n_gram - 1) + sentence_tokens
+        if sentence_tokens[-1 * (self.n_gram - 1):] != [SENTENCE_END] * (self.n_gram - 1):
+            sentence_tokens = sentence_tokens + [SENTENCE_END] * (self.n_gram - 1)
 
         # sentence_tokens = tokenize_line(sentence, self.n_gram, by_char=False)
         grams = create_ngrams(sentence_tokens, self.n_gram)
@@ -284,8 +287,8 @@ class LanguageModel:
     Returns:
       float: the perplexity value of the given sequence for this model
     """
-        one_by_score = 1/self.score(sequence)
-        perplexity = one_by_score**(1/len(sequence))
+        one_by_score = 1 / self.score(sequence)
+        perplexity = one_by_score ** (1 / len(sequence))
 
         return perplexity
 
@@ -305,8 +308,8 @@ if __name__ == '__main__':
     print("tokenize", tokenize(["apples are fruit", "bananas are too"], 2, by_char=False))
     print("create_ngrams", create_ngrams(['<s>', 'apples', 'are', 'bananas', 'too', '</s>'], 4), '\n\n')
 
-    ng = LanguageModel(1)
-    ng.train(unk_replace=True, verbose=True)
-    print(ng.score("<s> let's start overr </s>".split()))
+    ng = LanguageModel(3)
+    ng.train(verbose=True)
+    print(ng.score("<s>".split()))
     print(*ng.generate(5), sep="\n")
     print(ng.perplexity(ng.generate_sentence()))
