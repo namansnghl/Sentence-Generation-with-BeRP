@@ -3,9 +3,6 @@ import numpy as np
 import math
 import os
 
-"""
-CS6120 Homework 2 - starter code
-"""
 
 # constants
 SENTENCE_BEGIN = "<s>"
@@ -207,6 +204,11 @@ class LanguageModel:
     Returns:
       float: the probability value of the given tokens for this model
     """
+        # Adding start and end if not already present
+        if sentence_tokens[:self.n_gram-1] != [SENTENCE_BEGIN]*(self.n_gram-1):
+            sentence_tokens = [SENTENCE_BEGIN]*(self.n_gram-1) + sentence_tokens
+        if sentence_tokens[-1*(self.n_gram-1):] != [SENTENCE_END]*(self.n_gram-1):
+            sentence_tokens = sentence_tokens + [SENTENCE_END]*(self.n_gram-1)
 
         # sentence_tokens = tokenize_line(sentence, self.n_gram, by_char=False)
         grams = create_ngrams(sentence_tokens, self.n_gram)
@@ -282,8 +284,10 @@ class LanguageModel:
     Returns:
       float: the perplexity value of the given sequence for this model
     """
-        ## TODO
-        ...
+        one_by_score = 1/self.score(sequence)
+        perplexity = one_by_score**(1/len(sequence))
+
+        return perplexity
 
     @classmethod
     def get_filename(cls):
@@ -301,7 +305,8 @@ if __name__ == '__main__':
     print("tokenize", tokenize(["apples are fruit", "bananas are too"], 2, by_char=False))
     print("create_ngrams", create_ngrams(['<s>', 'apples', 'are', 'bananas', 'too', '</s>'], 4), '\n\n')
 
-    ng = LanguageModel(3)
+    ng = LanguageModel(1)
     ng.train(unk_replace=True, verbose=True)
     print(ng.score("<s> let's start overr </s>".split()))
     print(*ng.generate(5), sep="\n")
+    print(ng.perplexity(ng.generate_sentence()))
