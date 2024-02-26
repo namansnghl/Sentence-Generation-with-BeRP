@@ -207,13 +207,10 @@ class LanguageModel:
     Returns:
       float: the probability value of the given tokens for this model
     """
-        # Adding start and end if not already present
-        if sentence_tokens[:self.n_gram - 1] != [SENTENCE_BEGIN] * (self.n_gram - 1):
-            sentence_tokens = [SENTENCE_BEGIN] * (self.n_gram - 1) + sentence_tokens
-        if sentence_tokens[-1 * (self.n_gram - 1):] != [SENTENCE_END] * (self.n_gram - 1):
-            sentence_tokens = sentence_tokens + [SENTENCE_END] * (self.n_gram - 1)
+        # replace unknown tokens with UNK
+        sentence_tokens = [UNK if token in self.unk_filtered.keys() else token for token in sentence_tokens]
+        sentence_tokens = [UNK if token not in self.vocab.keys() else token for token in sentence_tokens]
 
-        # sentence_tokens = tokenize_line(sentence, self.n_gram, by_char=False)
         grams = create_ngrams(sentence_tokens, self.n_gram)
         prob = 1
 
@@ -222,9 +219,17 @@ class LanguageModel:
             word = token_set[-1]
 
             try:
-                c_sentence = self.model[context][word]
+                if context:
+                    c_sentence = self.model[context][word]
             except KeyError:
-                c_sentence = 0
+                c_sentence = 0  # If this is an unknown word in the given context
+
+            try:
+                if not context:
+                    c_sentence = self.vocab[word]
+            except KeyError:
+                c_sentence = self.vocab[UNK]
+
             try:
                 c_context = sum(self.model[context].values())
             except KeyError:
@@ -243,7 +248,7 @@ class LanguageModel:
     Returns:
       list: the generated sentence as a list of tokens
     """
-        sentence = [SENTENCE_BEGIN] * (self.n_gram - 1)
+        sentence = ([SENTENCE_BEGIN] * (self.n_gram - 1)) if self.n_gram>1 else [SENTENCE_BEGIN]
         word_chosen = None
 
         # Generate words until we get sentence end
@@ -253,6 +258,9 @@ class LanguageModel:
             # print(window_start)
             gram_window = tuple(sentence[window_start:])
             words_possible = self.model.get(gram_window, {})
+
+            # Filter out SENTENCE_BEGINS
+            words_possible = dict(filter(lambda item: item[0] != SENTENCE_BEGIN, words_possible.items()))
             total_context_words = sum(words_possible.values())
 
             # print(f"{gram_window=}\n{words_possible=}")
@@ -264,8 +272,9 @@ class LanguageModel:
 
             word_chosen = words_possible[word_chosen_idx[0]]
             sentence.append(word_chosen)
+        sentence = sentence + ([SENTENCE_END]*(self.n_gram-2))
 
-        sentence = sentence[self.n_gram - 1:-1]
+        # sentence = sentence[self.n_gram - 1:-1]
 
         return sentence
 
