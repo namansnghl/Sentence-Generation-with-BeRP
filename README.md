@@ -1,5 +1,5 @@
 # Sentence-Generation-with-BeRP
-Implementing n-gram to generate random sentences using the Restaurant converation Transcript as training data [Read more here](https://www1.icsi.berkeley.edu/Speech/berp.html)
+Implementing n-gram to generate random meaningful sentences using the Restaurant converation Transcript as training data [Read more here](https://www1.icsi.berkeley.edu/Speech/berp.html)
 
 Note: This repo project was part of my NLP coursework at my university
 
