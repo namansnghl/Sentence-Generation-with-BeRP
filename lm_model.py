@@ -1,6 +1,5 @@
 from collections import Counter
 import numpy as np
-import math
 import os
 
 # constants
@@ -180,6 +179,8 @@ class LanguageModel:
             print(f"Created {len(grams)} ngrams")
 
         print_history = []
+
+        # Training the model with ngram window
         for window in grams:
             context = window[:-1]
             word = window[-1]
@@ -218,6 +219,7 @@ class LanguageModel:
             context = token_set[:-1]
             word = token_set[-1]
 
+            # Some logic for UNK context or words
             try:
                 if context:
                     c_sentence = self.model[context][word]
@@ -253,9 +255,8 @@ class LanguageModel:
 
         # Generate words until we get sentence end
         while word_chosen != SENTENCE_END:
-            # print(f"{sentence=}")
+            # Finding list of all possible words for given context
             window_start = len(sentence) - self.n_gram + 1
-            # print(window_start)
             gram_window = tuple(sentence[window_start:])
             words_possible = self.model.get(gram_window, {})
 
@@ -263,10 +264,11 @@ class LanguageModel:
             words_possible = dict(filter(lambda item: item[0] != SENTENCE_BEGIN, words_possible.items()))
             total_context_words = sum(words_possible.values())
 
-            # print(f"{gram_window=}\n{words_possible=}")
+            # Probability calculation
             probablities = [(v / total_context_words) for v in words_possible.values()]
             words_possible = list(words_possible.keys())
 
+            # Choosing the word using Shannon technique
             words_possible_idx = list(range(len(words_possible)))
             word_chosen_idx = np.random.choice(words_possible_idx, size=1, p=probablities)
 
@@ -275,7 +277,6 @@ class LanguageModel:
         sentence = sentence + ([SENTENCE_END]*(self.n_gram-2))
 
         # sentence = sentence[self.n_gram - 1:-1]
-
         return sentence
 
     def generate(self, n: int) -> list:
@@ -311,8 +312,8 @@ class LanguageModel:
         return 1
 
 
-# not required
 if __name__ == '__main__':
+    # Script testing
     print("tokenize_line", tokenize_line("tokenize this sentence!", 3, by_char=False))
     print("tokenize", tokenize(["apples are fruit", "bananas are too"], 2, by_char=False))
     print("create_ngrams", create_ngrams(['<s>', 'apples', 'are', 'bananas', 'too', '</s>'], 4), '\n\n')
