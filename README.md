@@ -1,9 +1,11 @@
 # Sentence-Generation-with-BeRP
-Implementing n-gram to generate random meaningful sentences using the Restaurant converation Transcript as training data [Read more here](https://www1.icsi.berkeley.edu/Speech/berp.html)
+This repository goes into exploring the transcripts of the Berkeley Restaurant Project (BeRP) for generating random but meaningful sentences.
 
-Note: This repo project was part of my NLP coursework at my university
+## Technical Details:
+- **BeRP Corpus**: The [BeRP dataset](https://github.com/wooters/berp-trans) comprises transcripts of conversations related to restaurant services in Berkeley, CA. This project utilizes the BeRP transcripts as the primary data source for building the n-gram model and generating sentences. These transcripts provide a rich and diverse collection of restaurant-related dialogue.
+- **n-Gram Language Modeling**: The project implements an n-gram model modeling techniques to analyze the sequential word patterns within the transcripts, which predicts the next word in a sequence based on the preceding n-1 words. Experimenting with different n-gram sizes can offer varying levels of context dependence in the generated sentences.
 
-#### Main files
-- **lm_model.py** - The main model trained on the dataset
-- **testing_ngram_lm.ipynb** - testing the model with a bunch of unit test scenarios including all edge cases
-- **test_minitrainingprovided.py** - All unit tests
+## Key Files:
+- `lm_model.py`: This file houses the core functionality of the trained model, which utilizes the n-gram language modeling approach and BeRP transcripts.
+- `testing_ngram_lm.ipynb`: This Jupyter Notebook contains comprehensive unit tests to ensure the model's correctness across various scenarios, including edge cases.
+- `test_minitrainingprovided.py`: This Python file encompasses all the unit tests used to evaluate the model's performance.
